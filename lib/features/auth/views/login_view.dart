@@ -1,9 +1,10 @@
 import 'package:firebase_practice/features/auth/views/register_view.dart';
+import 'package:firebase_practice/features/home/manager/home_cubit.dart';
+import 'package:firebase_practice/features/home/views/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/widgets/app_text_form_field.dart';
-import '../../home/views/home_view.dart';
 import '../manager/auth_cubit.dart';
 import '../manager/auth_state.dart';
 
@@ -47,19 +48,20 @@ class _LoginViewState extends State<LoginView> {
           child: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               if (state is AuthFailure) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(content: Text(state.errorMessage)));
               }
+
               if (state is LoginSuccess) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(
-                    backgroundColor: Colors.green,
-                    content: Text("Login Success")));
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomeView()),
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => HomeCubit()..getStudents(),
+                      child: const HomeView(),
+                    ),
+                  ),
                   (route) => false,
                 );
               }
@@ -72,15 +74,13 @@ class _LoginViewState extends State<LoginView> {
                     hintText: "Email",
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return "Email is required";
                       }
                       return null;
                     },
                   ),
-
                   const SizedBox(height: 20),
-
                   AppTextFormField(
                     controller: passwordController,
                     hintText: "Password",
@@ -89,25 +89,24 @@ class _LoginViewState extends State<LoginView> {
                       if (value == null || value.length < 6) {
                         return "Minimum 6 characters";
                       }
-
                       return null;
                     },
                   ),
-
                   const SizedBox(height: 30),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: state is AuthLoading ? null : login,
                       child: state is AuthLoading
-                          ? Center(child: const CircularProgressIndicator())
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text("Login"),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -117,7 +116,7 @@ class _LoginViewState extends State<LoginView> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RegisterView(),
+                              builder: (_) => const RegisterView(),
                             ),
                           );
                         },

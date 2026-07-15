@@ -1,3 +1,4 @@
+import 'package:firebase_practice/features/home/manager/home_cubit.dart';
 import 'package:firebase_practice/features/home/views/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,20 +50,20 @@ class _RegisterViewState extends State<RegisterView> {
             listener: (context, state) {
               if (state is AuthFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.errorMessage),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  SnackBar(
+                    content: Text(state.errorMessage),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
 
               if (state is RegisterSuccess) {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const HomeView(),
-                  ),
-                      (route) => false,
+                  MaterialPageRoute(builder: (_) => BlocProvider(
+                      create: (context) => HomeCubit()..getStudents(),
+                      child: const HomeView())),
+                  (route) => false,
                 );
               }
             },
@@ -129,12 +130,10 @@ class _RegisterViewState extends State<RegisterView> {
                       onPressed: state is AuthLoading ? null : register,
                       child: state is AuthLoading
                           ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text("Create Account"),
                     ),
                   ),
